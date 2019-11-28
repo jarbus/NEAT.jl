@@ -1,11 +1,11 @@
 type Species
     # A subpopulation containing similar individiduals
-    id::Int64                         # species's id
-    age::Int64                        # species's age
+    id::Int                         # species's id
+    age::Int                        # species's age
     subpopulation::Vector{Chromosome} # species's individuals
     hasBest::Bool                     # Does this species has the best individual of the population?
-    spawn_amount::Int64
-    no_improvement_age::Int64         # the age species has shown no improvements on average
+    spawn_amount::Int
+    no_improvement_age::Int         # the age species has shown no improvements on average
     last_avg_fitness::Float64
     representant::Chromosome
     function Species(g::Global, first_individual::Chromosome, previous_id=0)

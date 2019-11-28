@@ -3,20 +3,20 @@ type Recurrent   <: ChromoType end
 type FeedForward <: ChromoType end
 
 type Chromosome
-    id::Int64
-    inputCnt::Int64
-    outputCnt::Int64
+    id::Int
+    inputCnt::Int
+    outputCnt::Int
     node_gene_type::ChromoType
     conn_gene_type::Symbol
-    connection_genes::Dict{(Int64,Int64),ConnectionGene}
+    connection_genes::Dict{(Int,Int),ConnectionGene}
     node_genes::Vector{NodeGene}
     fitness::Float64
-    species_id::Int64
-    parent1_id::Int64
-    parent2_id::Int64
-    node_order::Vector{Int64}
+    species_id::Int
+    parent1_id::Int
+    parent2_id::Int
+    node_order::Vector{Int}
     # a chromosome for general recurrent neural networks.
-    function Chromosome(g::Global, parent1_id::Int64, parent2_id::Int64, node_gene_type::ChromoType, conn_gene_type::Symbol)
+    function Chromosome(g::Global, parent1_id::Int, parent2_id::Int, node_gene_type::ChromoType, conn_gene_type::Symbol)
 
         new(incChromeId!(g),
             g.cf.input_nodes, g.cf.output_nodes,
@@ -25,7 +25,7 @@ type Chromosome
             node_gene_type, conn_gene_type,
 
             # how many genes of the previous type the chromosome has
-            Dict{(Int64,Int64),ConnectionGene}(), # dictionary of connection genes
+            Dict{(Int,Int),ConnectionGene}(), # dictionary of connection genes
             [], # empty array of node_genes
             0., # stub for fitness function
             0, # species_id
@@ -284,7 +284,7 @@ function Base.show(io::IO, ch::Chromosome)
     return
 end
 
-function add_hidden_nodes!(g::Global, ch::Chromosome, num_hidden::Int64, ::Recurrent)
+function add_hidden_nodes!(g::Global, ch::Chromosome, num_hidden::Int, ::Recurrent)
 
     id = length(ch.node_genes)+1
     for i in 1:num_hidden
@@ -358,7 +358,7 @@ function create_fully_connected(g::Global)
     return ch
 end
 
-function add_hidden_nodes!(g::Global, ch::Chromosome, num_hidden::Int64, ::FeedForward)
+function add_hidden_nodes!(g::Global, ch::Chromosome, num_hidden::Int, ::FeedForward)
     id = length(ch.node_genes)+1
     for i in 1:num_hidden
         node_gene = NodeGene(id, :HIDDEN, 0., 1., g.cf.nn_activation)

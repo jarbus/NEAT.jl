@@ -1,15 +1,15 @@
 abstract Node
 
-type NodeGene <: Node
+struct NodeGene <: Node
     #= A node gene encodes the basic artificial neuron model.
     nodetype should be "INPUT", "HIDDEN", or "OUTPUT" =#
-    id::Int64
+    id::Int
     ntype::Symbol
     bias::Float64
     response::Float64
     activation::Symbol
     timeConstant::Float64
-    function NodeGene(id::Int64, nodetype::Symbol, bias::Float64=0., response::Float64=1., # 4.924273,
+    function NodeGene(id::Int, nodetype::Symbol, bias::Float64=0., response::Float64=1., # 4.924273,
                       activation::Symbol=:sigm, timeConstant::Float64=1.0)
         @assert  activation in [:none, :sigm, :tanh, :relu]
         new(id, nodetype, bias, response, activation, timeConstant)
@@ -65,13 +65,13 @@ end
 get_new_innov_number(g::Global) =  g.innov_number += 1
 
 type ConnectionGene
-    inId::Int64
-    outId::Int64
+    inId::Int
+    outId::Int
     weight::Float64
     enable::Bool
-    key::(Int64,Int64)
-    innovNumber::Int64
-    function ConnectionGene(g::Global,inId::Int64, outId::Int64, weight::Float64, enable::Bool=true, innov::Int64=0)
+    key::(Int,Int)
+    innovNumber::Int
+    function ConnectionGene(g::Global,inId::Int, outId::Int, weight::Float64, enable::Bool=true, innov::Int=0)
         key = (inId, outId)
         if innov == 0
             if haskey(g.innovations,key)
@@ -112,7 +112,7 @@ function weight_replaced!(cg::ConnectionGene, cf::Config)
         cg.weight = randn() * cf.weight_stdev
 end
 
-function split(g::Global,cg::ConnectionGene, node_id::Int64)
+function split(g::Global,cg::ConnectionGene, node_id::Int)
     # Splits a connection, creating two new connections and disabling this one """
     cg.enable = false
     new_conn1 = ConnectionGene(g, cg.inId, node_id, 1.0, true)
@@ -124,7 +124,7 @@ is_same_innov(self::ConnectionGene, other::ConnectionGene) = self.innovNumber ==
 
 get_child(self::ConnectionGene, other::ConnectionGene) = randbool() ? self : other
 
-function maxInnov(cgs::Dict{(Int64,Int64), ConnectionGene})
+function maxInnov(cgs::Dict{(Int,Int), ConnectionGene})
     @assert length(cgs) > 0
 
     cgsKeys = collect(keys(cgs))

@@ -1,9 +1,8 @@
-type Config
-
+struct Config
     # phenotype config
-    input_nodes::Int64
-    output_nodes::Int64
-    hidden_nodes::Int64
+    input_nodes::Int
+    output_nodes::Int
+    hidden_nodes::Int
     fully_connected::Bool
     max_weight::Float64
     min_weight::Float64
@@ -14,7 +13,7 @@ type Config
     weight_stdev::Float64
 
     # GA config
-    pop_size::Int64
+    pop_size::Int
     max_fitness_threshold::Float64
     prob_addconn::Float64
     prob_addnode::Float64
@@ -33,13 +32,13 @@ type Config
     weight_coeficient::Float64
 
     # species
-    species_size::Int64
+    species_size::Int
     survival_threshold::Float64 # only the best 20% for each species is allowed to mate
-    old_threshold::Int64
-    youth_threshold::Int64
+    old_threshold::Int
+    youth_threshold::Int
     old_penalty::Float64    # always in (0,1)
     youth_boost::Float64    # always in (1,2)
-    max_stagnation::Int64
+    max_stagnation::Int
 
     function Config(params::Dict{String,String})
 

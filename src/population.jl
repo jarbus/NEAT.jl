@@ -2,10 +2,10 @@
 type Population
     # Manages all the species
     population::Vector{Chromosome}
-    popsize::Int64
+    popsize::Int
     species::Vector{Species}
-    species_history::Vector{Array{Int64,1}}
-    generation::Int64
+    species_history::Vector{Array{Int,1}}
+    generation::Int
     avg_fitness::Vector{Float64}
     best_fitness::Vector{Chromosome}
     evaluate::Function # Evaluates population. Override this method in your experiments
@@ -30,7 +30,7 @@ type Population
             end
 
             p = new(population, popsize,
-                    Species[],Array{Int64,1}[], # currently living species and species history
+                    Species[],Array{Int,1}[], # currently living species and species history
                     -1, # generation
                     Float64[], # avg_fitness
                     Chromosome[]); # best_fitness
@@ -142,7 +142,7 @@ end
 function log_species(p::Population)
     # Logging species data for visualizing speciation
     specById = sort(p.species, by=s->s.id)
-    spec_size = zeros(Int64,specById[end].id+1)
+    spec_size = zeros(Int,specById[end].id+1)
     map(s->spec_size[s.id]=length(s) , specById)
     push!(p.species_history,spec_size)
 end
@@ -167,8 +167,8 @@ function population_diversity(p::Population)
     return num_nodes/total, num_conns/total, avg_weights/total
 end
 
-function epoch(g::Global, p::Population, n::Int64, report::Bool=true, save_best::Bool=false,
-               checkpoint_interval::Int64=15, checkpoint_generation=0)
+function epoch(g::Global, p::Population, n::Int, report::Bool=true, save_best::Bool=false,
+               checkpoint_interval::Int=15, checkpoint_generation=0)
     #= Runs NEAT's genetic algorithm for n epochs.
 
         Keyword arguments:
@@ -221,7 +221,7 @@ function epoch(g::Global, p::Population, n::Int64, report::Bool=true, save_best:
 
         # Remove stagnated species and its members (except if it has the best chromosome)
         speciesToKeep = trues(length(p.species))
-        deletedSpeciesIds = Int64[]
+        deletedSpeciesIds = Int[]
         for i in 1:length(p.species)
             if p.species[i].no_improvement_age > g.cf.max_stagnation
                 if !p.species[i].hasBest || p.species[i].no_improvement_age > 2 * g.cf.max_stagnation
@@ -246,7 +246,7 @@ function epoch(g::Global, p::Population, n::Int64, report::Bool=true, save_best:
 
         # Removing species with spawn amount = 0
         speciesToKeep = trues(length(p.species))
-        deletedSpeciesIds = Int64[]
+        deletedSpeciesIds = Int[]
         for i in 1:length(p.species)
 
             # This rarely happens
