@@ -1,5 +1,6 @@
 module NEAT
 using Printf
+using Random
 
 include("config.jl")
 
@@ -21,7 +22,7 @@ include("genome.jl")
 include("chromosome.jl")
 include("species.jl")
 include("population.jl")
-# include("../networks/nn.jl")
+include("../networks/nn.jl")
 
 # export Input, Output, Hidden
 

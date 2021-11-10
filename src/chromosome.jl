@@ -1,8 +1,10 @@
 abstract type ChromoType end
-abstract type Recurrent   <: ChromoType end
-abstract type FeedForward <: ChromoType end
+struct Recurrent   <: ChromoType end
+struct FeedForward <: ChromoType end
 
-struct Chromosome
+
+
+mutable struct Chromosome
     id::Int
     inputCnt::Int
     outputCnt::Int
@@ -25,7 +27,7 @@ struct Chromosome
             node_gene_type, conn_gene_type,
 
             # how many genes of the previous type the chromosome has
-            Dict{(Int,Int),ConnectionGene}(), # dictionary of connection genes
+            Dict{Tuple{Int,Int},ConnectionGene}(), # dictionary of connection genes
             [], # empty array of node_genes
             0., # stub for fitness function
             0, # species_id
@@ -49,7 +51,9 @@ function mutate(ch::Chromosome, g::Global)
     elseif rand() < g.cf.prob_addconn
         mutate_add_connection!(ch, g, ch.node_gene_type)
     else
-        map(cg -> mutate!(cg[2], g.cf), ch.connection_genes) # mutate weights
+        for (edge, cg) in ch.connection_genes
+            mutate!(cg, g.cf) # mutate weights
+        end
         map(ng -> mutate!(ng, g.cf), ch.node_genes[ch.inputCnt+1:end]) # mutate bias, response, and etc...
     end
     return ch
@@ -164,10 +168,10 @@ function mutate_add_node!(ch::Chromosome, g::Global,::FeedForward)
     # Add node to node order list: after the presynaptic node of the split connection
     # and before the postsynaptic node of the split connection
     mini = ch.node_genes[split_conn.inId].ntype == :HIDDEN ?
-        findfirst(ch.node_order, split_conn.inId)+1 : 1
+        findfirst(x->x==split_conn.inId,ch.node_order)+1 : 1
 
     maxi = ch.node_genes[split_conn.outId].ntype == :HIDDEN ?
-        findfirst(ch.node_order, split_conn.outId) : length(ch.node_order)
+        findfirst(x->x==split_conn.outId, ch.node_order) : length(ch.node_order)
 
     idx = mini <= maxi ? rand(mini:maxi) : mini # unnecessary?
     insert!(ch.node_order, idx, ng.id)
@@ -182,7 +186,7 @@ function mutate_add_connection!(ch::Chromosome, g::Global,::FeedForward)
     num_hidden = length(ch.node_order)
     num_output = length(ch.node_genes) - ch.inputCnt - num_hidden
 
-    total_possible_conns = (num_hidden + num_output)*(ch.inputCnt + num_hidden) - sum([1:num_hidden+1])
+    total_possible_conns = (num_hidden + num_output)*(ch.inputCnt + num_hidden) - sum(1:num_hidden+1)
 
     remaining_conns = total_possible_conns - length(ch.connection_genes)
     # Check if new connection can be added:

@@ -1,4 +1,4 @@
-struct Species
+mutable struct Species
     # A subpopulation containing similar individiduals
     id::Int                         # species's id
     age::Int                        # species's age
@@ -49,7 +49,7 @@ end
 function tournamentSelection(s::Species, k=2)
     # Tournament selection with size k (default k=2).
     # randomly select k competitors
-    selected = randperm(length(s.subpopulation))[1:k]
+    selected = shuffle(1:length(s.subpopulation))[1:k]
     chs = s.subpopulation[selected]
     best = chs[1]
     for ch in chs # choose best among randomly selected
@@ -98,8 +98,8 @@ function reproduce(g::Global,s::Species)
         s.spawn_amount -= 1
     end
 
-    survivors = ifloor(length(s) * g.cf.survival_threshold) # keep a % of the best individuals
-#     println("survivors = $survivors $(length(s))")
+    survivors = Int(floor(length(s) * g.cf.survival_threshold)) # keep a % of the best individuals
+    #println("survivors = $survivors $(length(s))")
     s.subpopulation = survivors > 0 ? s.subpopulation[1:survivors] : [s.subpopulation[1]]
 
     while(s.spawn_amount > 0)

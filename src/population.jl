@@ -1,5 +1,5 @@
 
-struct Population
+mutable struct Population
     # Manages all the species
     population::Vector{Chromosome}
     popsize::Int
@@ -46,7 +46,7 @@ end
 
 function remove(p::Population, ch::Chromosome)
     # Removes a chromosome from the population
-    deleteat!(p.population,findfirst(p.population,ch))
+    deleteat!(p.population,findfirst(x->x==ch, p.population))
     return
 end
 
@@ -91,6 +91,8 @@ function set_compatibility_threshold(g::Global, p::Population)
     end
 end
 
+mean(x) = sum(x) / length(x)
+
 # Returns the average raw fitness of population
 average_fitness(p::Population) = mean([p.population[i].fitness::Float64 for i=1:length(p.population)])
 
@@ -124,14 +126,14 @@ function compute_spawn_levels(g::Global, p::Population)
      # 3. Compute spawn
     for i= 1:length(p.species)
         s = p.species[i]
-        s.spawn_amount = int(round((species_stats[i] * p.popsize / total_average)))
+        s.spawn_amount = Int(round(species_stats[i] * p.popsize / total_average))
     end
 end
 
 function tournamentSelection(p::Population, k=2)
     # Tournament selection with size k (default k=2).
     # randomly select k competitors
-    chs = p.population[randperm(length(p.population))[1:k]]
+    chs = p.population[shuffle(1:length(p.population))[1:k]]
     best = chs[1]
     for ch in chs # choose best among randomly selected
         best = ch.fitness > best.fitness ? ch : best
@@ -179,6 +181,7 @@ function epoch(g::Global, p::Population, n::Int, report::Bool=true, save_best::B
             (default 0 -- option disabled)
     =#
     t0 = time() # for saving checkpoints
+    println(p)
 
     for gen in 0:n
         p.generation += 1
@@ -237,7 +240,7 @@ function epoch(g::Global, p::Population, n::Int, report::Bool=true, save_best::B
         # remove species' chromosomes from population
         chromosToKeep = trues(length(p.population))
         for i in 1:length(p.population)
-            if findfirst(deletedSpeciesIds,p.population[i].species_id) != 0 chromosToKeep[i] = false end
+            if findfirst(x->x==p.population[i].species_id, deletedSpeciesIds) != 0 chromosToKeep[i] = false end
         end
         p.population = p.population[chromosToKeep] # prune unwanted chromosomes
 

@@ -81,12 +81,12 @@ end
 
 function activate(::FeedForward, nn::Network, inputs::Vector)
 
-    #=  Serial (asynchronous) network activation method. Mostly
-    used  in classification tasks (supervised learning) in
-    feedforward topologies. All neurons are updated (activated)
-    one at a time following their order of importance, so if
-    you're defining your own feedforward topology, make sure
-    you got them in the right order of activation. =#
+    ##=  Serial (asynchronous) network activation method. Mostly
+    #used  in classification tasks (supervised learning) in
+    #feedforward topologies. All neurons are updated (activated)
+    #one at a time following their order of importance, so if
+    #you're defining your own feedforward topology, make sure
+    #you got them in the right order of activation. =#
 
     @assert length(inputs) == nn.numInputs
 
@@ -107,10 +107,10 @@ end
 
 function activate(::Recurrent, nn::Network, inputs::Vector)
 
-    #= Parallel (synchronous) network activation method. Mostly used
-    for control and unsupervised learning (i.e., artificial life)
-    in recurrent networks. All neurons are updated (activated)
-    simultaneously. =#
+    ##= Parallel (synchronous) network activation method. Mostly used
+    #for control and unsupervised learning (i.e., artificial life)
+    #in recurrent networks. All neurons are updated (activated)
+    #simultaneously. =#
 
     @assert length(inputs) == nn.numInputs
 
@@ -140,12 +140,13 @@ function activate(::Recurrent, nn::Network, inputs::Vector)
 end
 
 
+
 function createPhenotype(ch::Chromosome)
     # Receives a chromosome and returns its phenotype (a neural network)
 
     neurons = Neuron[]
     Idx2Neuron = Dict{Int64,Neuron}()
-    if ch.node_gene_type == Recurrent()
+    if ch.node_gene_type == :Recurrent
 
         for ng in ch.node_genes
             n = Neuron(ng.ntype, ng.id, ng.bias, ng.activation, ng.response)
@@ -182,7 +183,7 @@ function createPhenotype(ch::Chromosome)
     @assert length(neurons) == length(ch.node_genes)
 
     synapses = Synapse[]
-    for (k,cg) in ch.connection_genes
+    for (k, cg) in ch.connection_genes
         if cg.enable push!(synapses, Synapse(Idx2Neuron[cg.inId], Idx2Neuron[cg.outId], cg.weight)) end
     end
 
