@@ -1,5 +1,5 @@
 
-type Population
+mutable struct Population
     # Manages all the species
     population::Vector{Chromosome}
     popsize::Int
@@ -20,10 +20,10 @@ type Population
             popsize = g.cf.pop_size # total population size
             for i in 1:popsize
 
-                ch = g.cf.fully_connected? create_fully_connected(g) : create_minimally_connected(g)
+                ch = g.cf.fully_connected ? create_fully_connected(g) : create_minimally_connected(g)
                 if g.cf.hidden_nodes > 0
-                    ch = ch = g.cf.fully_connected? ch: create_unconnected(g)
-                    nType = g.cf.feedforward? FeedForward():Recurrent()
+                    ch = ch = g.cf.fully_connected ? ch : create_unconnected(g)
+                    nType = g.cf.feedforward ? FeedForward() : Recurrent()
                     add_hidden_nodes!(g, ch, g.cf.hidden_nodes,nType)
                 end
                 push!(population, ch)
@@ -46,7 +46,7 @@ end
 
 function remove(p::Population, ch::Chromosome)
     # Removes a chromosome from the population
-    deleteat!(p.population,findfirst(p.population,ch))
+    deleteat!(p.population,findfirst(x->x==ch, p.population))
     return
 end
 
@@ -67,7 +67,7 @@ function speciate(g::Global, p::Population, report::Bool)
     end
 
     # eliminate empty species
-    keep = map(s->length(s)==0?false:true,p.species)
+    keep = map(s->length(s)==0 ? false : true,p.species)
     if report
         for i = 1:length(keep)
             if !keep[i] println("Removing species $(p.species[i].id) for being empty") end
@@ -91,6 +91,8 @@ function set_compatibility_threshold(g::Global, p::Population)
     end
 end
 
+mean(x) = sum(x) / length(x)
+
 # Returns the average raw fitness of population
 average_fitness(p::Population) = mean([p.population[i].fitness::Float64 for i=1:length(p.population)])
 
@@ -104,8 +106,8 @@ function compute_spawn_levels(g::Global, p::Population)
     species_stats = zeros(length(p.species))
     for i = 1:length(p.species)
         s = p.species[i]
-        species_stats[i] = s.age < g.cf.youth_threshold? average_fitness(s) * g.cf.youth_boost:
-            s.age > g.cf.old_threshold? average_fitness(s) * g.cf.youth_boost : average_fitness(s)
+        species_stats[i] = s.age < g.cf.youth_threshold ? average_fitness(s) * g.cf.youth_boost :
+            s.age > g.cf.old_threshold ? average_fitness(s) * g.cf.youth_boost : average_fitness(s)
         if s.age < g.cf.youth_threshold
             species_stats[i] = average_fitness(s) * g.cf.youth_boost
         elseif s.age > g.cf.old_threshold
@@ -124,17 +126,17 @@ function compute_spawn_levels(g::Global, p::Population)
      # 3. Compute spawn
     for i= 1:length(p.species)
         s = p.species[i]
-        s.spawn_amount = int(round((species_stats[i] * p.popsize / total_average)))
+        s.spawn_amount = Int(round(species_stats[i] * p.popsize / total_average))
     end
 end
 
 function tournamentSelection(p::Population, k=2)
     # Tournament selection with size k (default k=2).
     # randomly select k competitors
-    chs = p.population[randperm(length(p.population))[1:k]]
+    chs = p.population[shuffle(1:length(p.population))[1:k]]
     best = chs[1]
     for ch in chs # choose best among randomly selected
-        best = ch.fitness > best.fitness? ch :best
+        best = ch.fitness > best.fitness ? ch : best
     end
     return best
 end
@@ -193,6 +195,7 @@ function epoch(g::Global, p::Population, n::Int, report::Bool=true, save_best::B
         # Current population's average fitness
         push!(p.avg_fitness, average_fitness(p))
 
+
         # Current generation's best chromosome
         bestfit, bestidx = findmax(map(ch-> ch.fitness, p.population))
         best = p.population[bestidx]
@@ -237,7 +240,9 @@ function epoch(g::Global, p::Population, n::Int, report::Bool=true, save_best::B
         # remove species' chromosomes from population
         chromosToKeep = trues(length(p.population))
         for i in 1:length(p.population)
-            if findfirst(deletedSpeciesIds,p.population[i].species_id) != 0 chromosToKeep[i] = false end
+            if findfirst(x->x==p.population[i].species_id, deletedSpeciesIds) !== nothing
+                chromosToKeep[i] = false
+            end
         end
         p.population = p.population[chromosToKeep] # prune unwanted chromosomes
 
@@ -261,7 +266,9 @@ function epoch(g::Global, p::Population, n::Int, report::Bool=true, save_best::B
         # remove species' chromosomes from population
         chromosToKeep = trues(length(p.population))
         for i in 1:length(p.population)
-            if findfirst(deletedSpeciesIds,p.population[i].species_id) != 0 chromosToKeep[i] = false end
+            if findfirst(x->x==p.population[i].species_id, deletedSpeciesIds) !== nothing
+                chromosToKeep[i] = false
+            end
         end
         p.population = p.population[chromosToKeep] # prune unwanted chromosomes
 

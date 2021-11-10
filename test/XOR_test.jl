@@ -1,3 +1,4 @@
+using Printf
 paramsDict = NEAT.loadConfig(joinpath(dirname(@__FILE__),"XOR_config.txt"))
 config = NEAT.Config(paramsDict)
 g = NEAT.Global(config)
@@ -43,8 +44,8 @@ brain = NEAT.createPhenotype(winner)
 println("example\t\tcorrect\t\tpredicted")
 for i = 1:size(INPUTS,1)
     output = NEAT.activate(brain.nntype, brain, [INPUTS[i,1],INPUTS[i,2]])
-    @printf("%5d\t\t%1.5f \t%1.5f\n", i ,OUTPUTS[i], round(output[1],0))
-    if OUTPUTS[i] == round(output[1],2) correct[i] = true end
+    @printf("%5d\t\t%1.5f \t%1.5f\n", i ,OUTPUTS[i], round(output[1];digits=0))
+    if OUTPUTS[i] == round(output[1];digits=2) correct[i] = true end
 end
 
 @test all(correct) # YAY! XOR test passed

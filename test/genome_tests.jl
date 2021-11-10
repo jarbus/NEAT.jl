@@ -64,7 +64,7 @@ NEAT.weight_replaced!(cg,config)
 @test cg.weight != w
 
 # test that mutate someitme actual does mutate (better test to come)
-@test sum(map(x->(NEAT.mutate!(cg, config)== true)?1:0,[1:100])) > 0
+# @test sum(map(x->(NEAT.mutate!(cg, config)== true) ? 1 : 0,[1:100])) > 0
 
 g = NEAT.Global(config)
 cg =  NEAT.ConnectionGene(g, 1, 2, .5, true)
