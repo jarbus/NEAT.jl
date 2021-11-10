@@ -1,5 +1,5 @@
 
-type Population
+struct Population
     # Manages all the species
     population::Vector{Chromosome}
     popsize::Int
@@ -20,10 +20,10 @@ type Population
             popsize = g.cf.pop_size # total population size
             for i in 1:popsize
 
-                ch = g.cf.fully_connected? create_fully_connected(g) : create_minimally_connected(g)
+                ch = g.cf.fully_connected ? create_fully_connected(g) : create_minimally_connected(g)
                 if g.cf.hidden_nodes > 0
-                    ch = ch = g.cf.fully_connected? ch: create_unconnected(g)
-                    nType = g.cf.feedforward? FeedForward():Recurrent()
+                    ch = ch = g.cf.fully_connected ? ch : create_unconnected(g)
+                    nType = g.cf.feedforward ? FeedForward() : Recurrent()
                     add_hidden_nodes!(g, ch, g.cf.hidden_nodes,nType)
                 end
                 push!(population, ch)
@@ -67,7 +67,7 @@ function speciate(g::Global, p::Population, report::Bool)
     end
 
     # eliminate empty species
-    keep = map(s->length(s)==0?false:true,p.species)
+    keep = map(s->length(s)==0 ? false : true,p.species)
     if report
         for i = 1:length(keep)
             if !keep[i] println("Removing species $(p.species[i].id) for being empty") end
@@ -104,8 +104,8 @@ function compute_spawn_levels(g::Global, p::Population)
     species_stats = zeros(length(p.species))
     for i = 1:length(p.species)
         s = p.species[i]
-        species_stats[i] = s.age < g.cf.youth_threshold? average_fitness(s) * g.cf.youth_boost:
-            s.age > g.cf.old_threshold? average_fitness(s) * g.cf.youth_boost : average_fitness(s)
+        species_stats[i] = s.age < g.cf.youth_threshold ? average_fitness(s) * g.cf.youth_boost :
+            s.age > g.cf.old_threshold ? average_fitness(s) * g.cf.youth_boost : average_fitness(s)
         if s.age < g.cf.youth_threshold
             species_stats[i] = average_fitness(s) * g.cf.youth_boost
         elseif s.age > g.cf.old_threshold
@@ -134,7 +134,7 @@ function tournamentSelection(p::Population, k=2)
     chs = p.population[randperm(length(p.population))[1:k]]
     best = chs[1]
     for ch in chs # choose best among randomly selected
-        best = ch.fitness > best.fitness? ch :best
+        best = ch.fitness > best.fitness ? ch : best
     end
     return best
 end

@@ -1,4 +1,4 @@
-type Species
+struct Species
     # A subpopulation containing similar individiduals
     id::Int                         # species's id
     age::Int                        # species's age
@@ -10,7 +10,7 @@ type Species
     representant::Chromosome
     function Species(g::Global, first_individual::Chromosome, previous_id=0)
         # A species requires at least one individual to come to existence
-        id  = previous_id == 0? get_new_id(g):previous_id
+        id  = previous_id == 0 ? get_new_id(g) : previous_id
         first_individual.species_id = id
         new(id,
             0,     # species's age
@@ -53,7 +53,7 @@ function tournamentSelection(s::Species, k=2)
     chs = s.subpopulation[selected]
     best = chs[1]
     for ch in chs # choose best among randomly selected
-        best = ch.fitness > best.fitness? ch :best
+        best = ch.fitness > best.fitness ? ch : best
     end
     return best
 end
@@ -100,7 +100,7 @@ function reproduce(g::Global,s::Species)
 
     survivors = ifloor(length(s) * g.cf.survival_threshold) # keep a % of the best individuals
 #     println("survivors = $survivors $(length(s))")
-    s.subpopulation = survivors > 0? s.subpopulation[1:survivors]: [s.subpopulation[1]]
+    s.subpopulation = survivors > 0 ? s.subpopulation[1:survivors] : [s.subpopulation[1]]
 
     while(s.spawn_amount > 0)
 

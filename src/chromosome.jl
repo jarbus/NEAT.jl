@@ -1,6 +1,6 @@
-abstract struct ChromoType
-struct Recurrent   <: ChromoType end
-struct FeedForward <: ChromoType end
+abstract type ChromoType end
+abstract type Recurrent   <: ChromoType end
+abstract type FeedForward <: ChromoType end
 
 struct Chromosome
     id::Int
@@ -8,7 +8,7 @@ struct Chromosome
     outputCnt::Int
     node_gene_type::ChromoType
     conn_gene_type::Symbol
-    connection_genes::Dict{(Int,Int),ConnectionGene}
+    connection_genes::Dict{Tuple{Int,Int},ConnectionGene}
     node_genes::Vector{NodeGene}
     fitness::Float64
     species_id::Int
@@ -63,7 +63,7 @@ function crossover(g::Global, self::Chromosome, other::Chromosome)
     @assert self.species_id == other.species_id
 
     # TODO: if they're of equal fitnesses, choose the shortest
-    parent1, parent2 = self.fitness >= other.fitness? (self,other):(other,self)
+    parent1, parent2 = self.fitness >= other.fitness ? (self,other) : (other,self)
 
     # create a new child
     child = Chromosome(g, self.id, other.id, self.node_gene_type, self.conn_gene_type)
@@ -83,7 +83,7 @@ function inherit_genes!(g::Global, child::Chromosome, parent1::Chromosome, paren
     for (key, cg1) in parent1.connection_genes
         if haskey(parent2.connection_genes, key)
             cg2 = parent2.connection_genes[cg1.key]
-            gene = is_same_innov(cg1, cg2)? deepcopy(get_child(cg1, cg2)) : deepcopy(cg1)
+            gene = is_same_innov(cg1, cg2) ? deepcopy(get_child(cg1, cg2)) : deepcopy(cg1)
             child.connection_genes[cg1.key] = gene
         else # Copy excess or disjoint genes from the fittest parent
             child.connection_genes[cg1.key] = deepcopy(cg1)
@@ -163,13 +163,13 @@ function mutate_add_node!(ch::Chromosome, g::Global,::FeedForward)
     end
     # Add node to node order list: after the presynaptic node of the split connection
     # and before the postsynaptic node of the split connection
-    mini = ch.node_genes[split_conn.inId].ntype == :HIDDEN?
-        findfirst(ch.node_order, split_conn.inId)+1:1
+    mini = ch.node_genes[split_conn.inId].ntype == :HIDDEN ?
+        findfirst(ch.node_order, split_conn.inId)+1 : 1
 
-    maxi = ch.node_genes[split_conn.outId].ntype == :HIDDEN?
-        findfirst(ch.node_order, split_conn.outId):length(ch.node_order)
+    maxi = ch.node_genes[split_conn.outId].ntype == :HIDDEN ?
+        findfirst(ch.node_order, split_conn.outId) : length(ch.node_order)
 
-    idx = mini <= maxi? rand(mini:maxi):mini # unnecessary?
+    idx = mini <= maxi ? rand(mini:maxi) : mini # unnecessary?
     insert!(ch.node_order, idx, ng.id)
 #     assert(length(ch.node_order) == length([n for n in ch.node_genes if n.type == :HIDDEN]))
     return ng, split_conn
@@ -220,7 +220,7 @@ end
 function distance(self::Chromosome, other::Chromosome, cf::Config)
 
     # Returns the distance between this chromosome and the other.
-    chromo1, chromo2 = length(self.connection_genes) > length(other.connection_genes)? (self,other):(other,self)
+    chromo1, chromo2 = length(self.connection_genes) > length(other.connection_genes) ? (self,other) : (other,self)
 
     weight_diff = 0
     matching = 0
@@ -247,14 +247,14 @@ function distance(self::Chromosome, other::Chromosome, cf::Config)
     disjoint += length(chromo2.connection_genes) - matching
     d = cf.excess_coeficient * excess + cf.disjoint_coeficient * disjoint
 
-    return matching > 0? d + cf.weight_coeficient * weight_diff / matching : d
+    return matching > 0 ? d + cf.weight_coeficient * weight_diff / matching : d
 end
 
 function size(ch::Chromosome)
     # Defines chromosome 'complexity': number of hidden nodes plus
     # number of enabled connections (bias is not considered)
     num_hidden = length(ch.node_genes) - ch.inputCnt - ch.outputCnt
-    conns_enabled = sum(map(cg->ch.connection_genes[cg].enable==true? 1:0, collect(keys(ch.connection_genes))))
+    conns_enabled = sum(map(cg->ch.connection_genes[cg].enable==true ? 1 : 0, collect(keys(ch.connection_genes))))
 
     return num_hidden, conns_enabled
 end
@@ -287,7 +287,7 @@ end
 function add_hidden_nodes!(g::Global, ch::Chromosome, num_hidden::Int, ::Recurrent)
 
     id = length(ch.node_genes)+1
-    for i in 1:num_hidden
+    for _ in 1:num_hidden
         node_gene = NodeGene(id, :HIDDEN, 0., 1., g.cf.nn_activation)
         push!(ch.node_genes, node_gene)
         id += 1
@@ -309,16 +309,16 @@ end
 function create_unconnected(g::Global)
 
     # Creates a chromosome for an unconnected feedforward network with no hidden nodes.
-    c = Chromosome(g, 0, 0, (g.cf.feedforward? FeedForward():Recurrent()), :ConnectionGene)
+    c = Chromosome(g, 0, 0, (g.cf.feedforward ? FeedForward() : Recurrent()), :ConnectionGene)
 
     id = 1
     # Create node genes
-    for i = 1:c.inputCnt
+    for _ = 1:c.inputCnt
         push!(c.node_genes, NodeGene(id, :INPUT, 0., 1., :none))
         id += 1
     end
 #         #c._input_nodes += num_input
-    for i in 1:c.outputCnt
+    for _ in 1:c.outputCnt
         push!(c.node_genes, NodeGene(id, :OUTPUT, 0., 1., g.cf.nn_activation))
         id += 1
     end
@@ -360,7 +360,7 @@ end
 
 function add_hidden_nodes!(g::Global, ch::Chromosome, num_hidden::Int, ::FeedForward)
     id = length(ch.node_genes)+1
-    for i in 1:num_hidden
+    for _ in 1:num_hidden
         node_gene = NodeGene(id, :HIDDEN, 0., 1., g.cf.nn_activation)
         push!(ch.node_genes, node_gene)
         push!(ch.node_order,node_gene.id)

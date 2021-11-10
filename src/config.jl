@@ -1,4 +1,4 @@
-struct Config
+mutable struct Config
     # phenotype config
     input_nodes::Int
     output_nodes::Int
@@ -44,57 +44,59 @@ struct Config
 
         new(
             # phenotype
-            int(params["input_nodes"]),
-            int(params["output_nodes"]),
-            int(params["hidden_nodes"]),
-            bool(int(params["fully_connected"])),
-            float(params["max_weight"]),
-            float(params["min_weight"]),
-            float(params["max_weight_tau"]),
-            float(params["min_weight_tau"]),
-            bool(int(params["feedforward"])),
-            symbol(params["nn_activation"]),
-            float(params["weight_stdev"]),
+            parse(Int,params["input_nodes"]),
+            parse(Int,params["output_nodes"]),
+            parse(Int,params["hidden_nodes"]),
+            Bool(parse(Int,params["fully_connected"])),
+            parse(Float64,params["max_weight"]),
+            parse(Float64,params["min_weight"]),
+            parse(Float64,params["max_weight_tau"]),
+            parse(Float64,params["min_weight_tau"]),
+            Bool(parse(Int,params["feedforward"])),
+            Symbol(params["nn_activation"]),
+            parse(Float64,params["weight_stdev"]),
 
             # GA
-            int(params["pop_size"]),
-            float(params["max_fitness_threshold"]),
-            float(params["prob_addconn"]),
-            float(params["prob_addnode"]),
-            float(params["prob_mutatebias"]),
-            float(params["bias_mutation_power"]),
-            float(params["prob_mutate_weight"]),
-            float(params["weight_mutation_power"]),
-            float(params["prob_togglelink"]),
-            bool(int(params["elitism"])),
+            parse(Int,params["pop_size"]),
+            parse(Float64,params["max_fitness_threshold"]),
+            parse(Float64,params["prob_addconn"]),
+            parse(Float64,params["prob_addnode"]),
+            parse(Float64,params["prob_mutatebias"]),
+            parse(Float64,params["bias_mutation_power"]),
+            parse(Float64,params["prob_mutate_weight"]),
+            parse(Float64,params["weight_mutation_power"]),
+            parse(Float64,params["prob_togglelink"]),
+            Bool(parse(Int,params["elitism"])),
 
             # genotype compatibility
-            float(params["compatibility_threshold"]),
-            float(params["compatibility_change"]),
-            float(params["excess_coeficient"]),
-            float(params["disjoint_coeficient"]),
-            float(params["weight_coeficient"]),
+            parse(Float64,params["compatibility_threshold"]),
+            parse(Float64,params["compatibility_change"]),
+            parse(Float64,params["excess_coeficient"]),
+            parse(Float64,params["disjoint_coeficient"]),
+            parse(Float64,params["weight_coeficient"]),
 
             # species
-            int(params["species_size"]),
-            float(params["survival_threshold"]),
-            int(params["old_threshold"]),
-            int(params["youth_threshold"]),
-            float(params["old_penalty"]),
-            float(params["youth_boost"]),
-            int(params["max_stagnation"])
+            parse(Int,params["species_size"]),
+            parse(Float64,params["survival_threshold"]),
+            parse(Int,params["old_threshold"]),
+            parse(Int,params["youth_threshold"]),
+            parse(Float64,params["old_penalty"]),
+            parse(Float64,params["youth_boost"]),
+            parse(Int,params["max_stagnation"])
          )
     end
 end
 
 function loadConfig(file::String)
-    str = readall(file)
+    str = open(file) do f
+        read(f, String)
+    end
 
-    str = replace(str, r"\r(\n)?", '\n')
-    ls = split(str, "\n")
+    str = replace(str, r"\r(\n)?" => '\n')
+    ls = Base.split(str, "\n")
 
     ls = filter(l->length(l)>0 && l[1] != '#', ls)
-    lsMap = map(x->split(x,'='),ls)
+    lsMap = map(x->Base.split(x,'='),ls)
     params = Dict{String,String}()
     for i = 1:length(lsMap)
 #         println((i,lsMap[i][1],lsMap[i][2]))

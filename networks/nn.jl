@@ -1,10 +1,9 @@
 
-import Base.tanh
 sigm(x::Float64, γ::Float64=1.) = 1.0/(1.0 + exp(-x*γ))
 tanh(x::Real, γ::Real) = (exp(2x*γ)-1) / (exp(2x*γ)+1)
 relu(x::Real) = max(zero(eltype(x)),x)
 
-type Synapse
+struct Synapse
     source
     destination
     weight::Float64
@@ -20,7 +19,7 @@ function Base.show(io::IO, s::Synapse)
     @printf(io,"%d -> %3.5f -> %d\n", s.source.id, s.weight, s.destination.id)
 end
 
-type Neuron
+struct Neuron
     id::Int64
     synapses::Vector{Synapse}
     bias::Float64
@@ -28,10 +27,11 @@ type Neuron
     activation::Function  # [:sigm, :tanh, :relu]
     response::Float64   # default = 4.924273 (Stanley, p. 146)
     output::Float64     # for recurrent networks all neurons must have an "initial state"
-    function Neuron(neurontype::Symbol, id::Int64, bias::Float64=0., activation::Symbol=:sigm, γ::Float64=1.)
-        f = activation == :sigm?  x->sigm(x,γ):activation ==:tanh? x->tanh(x,γ):activation ==:relu? x->relu(x): x->x
-        new(id,[], bias, neurontype, f, γ, 0.)
-    end
+end
+
+function Neuron(neurontype::Symbol, id::Int64, bias::Float64=0., activation::Symbol=:sigm, γ::Float64=1.)
+    f = activation == :sigm ?  x->sigm(x,γ) : activation == :tanh ? x->tanh(x,γ) : activation == :relu ? x->relu(x) : x->x
+    Neuron(id,[], bias, neurontype, f, γ, 0.)
 end
 
 addSynapse(n::Neuron, s::Synapse) = push!(n.synapses,s)   # adds the synapse to the destination neuron
@@ -60,15 +60,13 @@ function Base.show(io::IO, n::Neuron)
     @printf(io,"%d %s\n", n.id, n.nType)
 end
 
-type Network
+struct Network
     neurons::Vector{Neuron}
     synapses::Vector{Synapse}
     numInputs::Int64
     nntype::ChromoType
-    Network(numInputs::Int64) = new([],[], numInputs, Recurrent())
-    Network(neurons::Vector{Neuron}, synapses::Vector{Synapse}, numInputs::Int64, nntype::ChromoType) =
-        new(neurons, synapses, numInputs, nntype)
 end
+
 
 addNeuron(network::Network, neuron::Neuron) = push!(network.neurons,neuron)
 

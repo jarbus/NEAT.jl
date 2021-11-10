@@ -1,6 +1,6 @@
-abstract Node
+abstract type Node end
 
-struct NodeGene <: Node
+mutable struct NodeGene <: Node
     #= A node gene encodes the basic artificial neuron model.
     nodetype should be "INPUT", "HIDDEN", or "OUTPUT" =#
     id::Int
@@ -24,11 +24,11 @@ end
 
 function get_child(ng::NodeGene, other::NodeGene)
     # Creates a new NodeGene ramdonly inheriting its attributes from parents
-    assert(ng.id == other.id)
+    @assert ng.id == other.id
     ng = NodeGene(ng.id, ng.ntype,
-                    randbool()? ng.bias : other.bias,
-                    randbool()? ng.response : other.response, ng.activation,
-                    randbool()? ng.timeConstant : other.timeConstant)
+                    rand(Bool) ? ng.bias : other.bias,
+                    rand(Bool) ? ng.response : other.response, ng.activation,
+                    rand(Bool) ? ng.timeConstant : other.timeConstant)
     return ng
 end
 
@@ -64,12 +64,12 @@ end
 
 get_new_innov_number(g::Global) =  g.innov_number += 1
 
-type ConnectionGene
+mutable struct ConnectionGene
     inId::Int
     outId::Int
     weight::Float64
     enable::Bool
-    key::(Int,Int)
+    key::Tuple{Int,Int}
     innovNumber::Int
     function ConnectionGene(g::Global,inId::Int, outId::Int, weight::Float64, enable::Bool=true, innov::Int=0)
         key = (inId, outId)
@@ -122,21 +122,21 @@ end
 
 is_same_innov(self::ConnectionGene, other::ConnectionGene) = self.innovNumber == other.innovNumber
 
-get_child(self::ConnectionGene, other::ConnectionGene) = randbool() ? self : other
+get_child(self::ConnectionGene, other::ConnectionGene) = rand(Bool) ? self : other
 
-function maxInnov(cgs::Dict{(Int,Int), ConnectionGene})
+function maxInnov(cgs::Dict{Tuple{Int,Int}, ConnectionGene})
     @assert length(cgs) > 0
 
     cgsKeys = collect(keys(cgs))
     maxCg = cgs[cgsKeys[1]]
     for key in cgsKeys
-        maxCg = cgs[key].innovNumber > maxCg.innovNumber? cgs[key]: maxCg
+        maxCg = cgs[key].innovNumber > maxCg.innovNumber ? cgs[key] : maxCg
     end
     return maxCg
 end
 
 function Base.show(io::IO, cg::ConnectionGene)
     @printf(io, "In: %2d, Out: %2d, Weight: %+3.5f, %6s, InnovID: %d",
-            cg.inId, cg.outId, cg.weight,(cg.enable? "Enabled":"Disabled"), cg.innovNumber)
+            cg.inId, cg.outId, cg.weight,(cg.enable ? "Enabled" : "Disabled"), cg.innovNumber)
     return
 end
