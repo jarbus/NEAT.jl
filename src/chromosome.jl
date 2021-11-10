@@ -1,8 +1,8 @@
-abstract ChromoType
-type Recurrent   <: ChromoType end
-type FeedForward <: ChromoType end
+abstract struct ChromoType
+struct Recurrent   <: ChromoType end
+struct FeedForward <: ChromoType end
 
-type Chromosome
+struct Chromosome
     id::Int
     inputCnt::Int
     outputCnt::Int
