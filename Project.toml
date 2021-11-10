@@ -1,0 +1,13 @@
+name = "NEAT"
+uuid = "e0df731f-746f-443b-af70-1ad378a2a875"
+authors = ["jarbus <jarbus@tutanota.com> and contributors"]
+version = "0.1.0"
+
+[compat]
+julia = "1"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
