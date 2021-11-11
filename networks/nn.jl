@@ -19,7 +19,7 @@ function Base.show(io::IO, s::Synapse)
     @printf(io,"%d -> %3.5f -> %d\n", s.source.id, s.weight, s.destination.id)
 end
 
-struct Neuron
+mutable struct Neuron
     id::Int64
     synapses::Vector{Synapse}
     bias::Float64
@@ -146,7 +146,7 @@ function createPhenotype(ch::Chromosome)
 
     neurons = Neuron[]
     Idx2Neuron = Dict{Int64,Neuron}()
-    if ch.node_gene_type == :Recurrent
+    if ch.node_gene_type == Recurrent()
 
         for ng in ch.node_genes
             n = Neuron(ng.ntype, ng.id, ng.bias, ng.activation, ng.response)

@@ -1,5 +1,4 @@
 using NEAT
-reload("NEAT.jl")
 # output requests values to sum from X1, X2,...
 
 # Create 2 input nodes

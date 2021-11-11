@@ -181,7 +181,6 @@ function epoch(g::Global, p::Population, n::Int, report::Bool=true, save_best::B
             (default 0 -- option disabled)
     =#
     t0 = time() # for saving checkpoints
-    println(p)
 
     for gen in 0:n
         p.generation += 1
@@ -195,6 +194,7 @@ function epoch(g::Global, p::Population, n::Int, report::Bool=true, save_best::B
 
         # Current population's average fitness
         push!(p.avg_fitness, average_fitness(p))
+
 
         # Current generation's best chromosome
         bestfit, bestidx = findmax(map(ch-> ch.fitness, p.population))
@@ -240,7 +240,9 @@ function epoch(g::Global, p::Population, n::Int, report::Bool=true, save_best::B
         # remove species' chromosomes from population
         chromosToKeep = trues(length(p.population))
         for i in 1:length(p.population)
-            if findfirst(x->x==p.population[i].species_id, deletedSpeciesIds) != 0 chromosToKeep[i] = false end
+            if findfirst(x->x==p.population[i].species_id, deletedSpeciesIds) !== nothing
+                chromosToKeep[i] = false
+            end
         end
         p.population = p.population[chromosToKeep] # prune unwanted chromosomes
 
@@ -264,7 +266,9 @@ function epoch(g::Global, p::Population, n::Int, report::Bool=true, save_best::B
         # remove species' chromosomes from population
         chromosToKeep = trues(length(p.population))
         for i in 1:length(p.population)
-            if findfirst(deletedSpeciesIds,p.population[i].species_id) != 0 chromosToKeep[i] = false end
+            if findfirst(x->x==p.population[i].species_id, deletedSpeciesIds) !== nothing
+                chromosToKeep[i] = false
+            end
         end
         p.population = p.population[chromosToKeep] # prune unwanted chromosomes
 

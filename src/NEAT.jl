@@ -1,6 +1,7 @@
 module NEAT
 using Printf
 using Random
+import Base: show
 
 include("config.jl")
 

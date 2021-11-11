@@ -215,7 +215,7 @@ end
 
 function is_connection_feedforward(ch::Chromosome, in_node::NodeGene, out_node::NodeGene)
     return in_node.ntype == :INPUT || out_node.ntype == :OUTPUT ||
-        findfirst(ch.node_order, in_node.id) < findfirst(ch.node_order, out_node.id)
+        findfirst(x->x==in_node.id, ch.node_order) < findfirst(x->x==out_node.id, ch.node_order)
 end
 
 #----------  End of Mutation  ----------
