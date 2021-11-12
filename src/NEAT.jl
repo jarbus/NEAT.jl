@@ -1,7 +1,15 @@
 module NEAT
 using Printf
 using Random
+using Statistics
 import Base: show
+
+export Global
+export Config, loadConfig
+export Population
+export epoch
+export createPhenotype
+export activate
 
 include("config.jl")
 
